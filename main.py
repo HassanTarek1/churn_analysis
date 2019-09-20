@@ -40,7 +40,9 @@ data = pd.read_csv('cell2celltrain.csv')
 data.dropna(how='any', inplace=True)
 columns = list(data)
 total = len(data)
+#data frame for the probability of all yes/no columns
 prob_df_yn = pd.DataFrame()
+#data frame for the probabilty of the other string columns
 prob_df_str = pd.DataFrame()
 keys = []
 frames = []
@@ -50,9 +52,13 @@ for col in columns:
         prob_col = (prob(data, col))
         prob_df_yn[col] = prob_col
     elif is_string(data, col):
+        #keys is an array of columns names
         keys.append(col)
         tmp = pd.DataFrame(prob(data, col))
+        #frames is an array of data frames containing probabilty of each column
         frames.append(tmp)
+
+#concatinating the columns in one data frame and can be accessed by prob_df_str.loc[key]
 prob_df_str = pd.concat(frames, keys=keys)
+#the cond_prob() function returns a data frame containg the joint probability and the conditional
 p = (cond_prob(data,columns[1],columns[len(columns)-1]))
-x = prob(data,columns[len(columns)-1])
