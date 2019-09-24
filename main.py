@@ -85,7 +85,7 @@ y = data.groupby("PrizmCode").size()
 cond1 = data.groupby("PrizmCode")["Occupation"].value_counts()/y
 cond2 = cond_prob(data,"Occupation","PrizmCode")["Conditional"]
 sns.set()
-# histo(data,columns)
+histo(data,columns)
 x = np.array(data["MonthlyRevenue"])
 y = np.array(data["MonthlyMinutes"])
 mv = mean_var(data,columns)
