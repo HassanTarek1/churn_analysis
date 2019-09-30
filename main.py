@@ -4,11 +4,7 @@ import pandas as pd
 import seaborn as sns
 
 
-def is_string(dataframe, element):
-    column = dataframe[element]
-    c = np.array(column)
-    tmp = c[0]
-    return isinstance(tmp, str)
+
 
 
 def prob(dataframe, col):
@@ -38,54 +34,47 @@ def cond_prob(dataframe, col1, col2):
 def histo(dataframe,columns):
     sns.set()
     for col in columns:
-        if not is_string(dataframe,col):
-            dataframe.hist(col,bins=20)
-            plt.show()
-            dataframe[col].plot.kde()
-            plt.show()
-            plt.hist(dataframe[col], cumulative=True, density=1, label='CDF',
-                     histtype='step', alpha=1, color='r')
-            plt.show()
+        dataframe.hist(col,bins=25)
+        plt.show()
+        pdf, bins = np.histogram(data[col], bins=25, density=True)
+        bin_centers = (bins[1:] + bins[:-1]) * 0.5
+        plt.plot(bin_centers, pdf)
+        plt.show()
+        plt.hist(dataframe[col], cumulative=True, density=1, label='CDF',
+            histtype='step', alpha=1, color='k')
+        plt.show()
 
 def mean_var(df,columns):
     res = []
     for col in columns:
-        if not is_string(df,col):
-            n = np.array(df[col])
-            arr = [n.mean(),n.var()]
-            res.append(arr)
+        n = np.array(df[col])
+        arr = [n.mean(),n.var()]
+        res.append(arr)
     return res
 
+
+# 1 task
 data = pd.read_csv('cell2celltrain.csv')
-data.dropna(how='any', inplace=True)
+# 2,3 tasks
+data.dropna(inplace=True)
 columns = list(data)
 total = len(data)
-# data frame for the probability of all yes/no columns
-prob_df_yn = pd.DataFrame()
-# data frame for the probabilty of the other string columns
-prob_df_str = pd.DataFrame()
-keys = []
-frames = []
-for col in columns:
-    if (is_string(data, col) and
-            (str(data[col][0]) == "Yes" or str(data[col][0]) == "No")):
-        prob_col = (prob(data, col))
-        prob_df_yn[col] = prob_col
-    elif is_string(data, col):
-        # keys is an array of columns names
-        keys.append(col)
-        tmp = pd.DataFrame(prob(data, col))
-        # frames is an array of data frames containing probabilty of each column
-        frames.append(tmp)
-
-# concatinating the columns in one data frame and can be accessed by prob_df_str.loc[key]
-prob_df_str = pd.concat(frames, keys=keys)
-# the cond_prob() function returns a data frame containg the joint probability and the conditional
-y = data.groupby("PrizmCode").size()
-cond1 = data.groupby("PrizmCode")["Occupation"].value_counts()/y
-cond2 = cond_prob(data,"Occupation","PrizmCode")["Conditional"]
+number_data = data.select_dtypes(exclude=['object'])
+string_data = data.select_dtypes(exclude=['int','float'])
+# data frame for the probabilty of string columns
+# task 4
+print(prob(data,"CreditRating"))
+# task 5
+print(joint_prob(data,"Churn","ChildrenInHH"))
+# task 6
+y = data.groupby("Occupation").size()
+cond = data.groupby(["PrizmCode","Occupation"]).size()/y
+print(cond)
 sns.set()
-histo(data,columns)
-join_pdf = pd.DataFrame(joint_prob(data,"MonthlyRevenue","MonthlyMinutes"))
-mv = mean_var(data,columns)
-
+# task 7,8,9
+histo(number_data,list(number_data))
+# task 10
+join_pdf = plt.hist2d(data["MonthlyRevenue"],data["MonthlyMinutes"],bins=50,range=[[0,150],[0,1500]])
+plt.show()
+# task 11
+mv = mean_var(number_data,list(number_data))
