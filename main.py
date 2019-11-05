@@ -95,16 +95,13 @@ def pdf(data,col):
     plt.plot(bin_centers, pdf)
     plt.show()
 
-def bayes(data,col,given1,given2):
+def bayes(data,col,given):
     pr_chu = pd.Series(data.groupby(col).size())
-    pr1 = pd.Series(data.groupby(given1).size())
-    pr2 = pd.Series(data.groupby(given2).size())
-    pr_c1 = pd.Series(data.groupby([given1, col]).size() / pr_chu)
-    pr_c2 = pd.Series(data.groupby([given2, col]).size() / pr_chu)
-    pr_chu = pr_chu / total
-    pr1 = pr1 / total
-    pr2 = pr2 / total
-    return ((pr_c1*pr_c2*pr_chu)/pr1)/pr2
+    pr1 = pd.Series(data.groupby(given).size())
+    pr_c1 = pd.Series(data.groupby([given, col]).size() / pr_chu)
+    pr_chu = pr_chu / len(data)
+    pr1 = pr1 / len(data)
+    return (pr_c1*pr_chu)/pr1
 
 
 # milestone1
@@ -158,9 +155,17 @@ cond2 = pd.DataFrame(cond2)
 # task 5
 data_corr=data_corr.drop(columns="CustomerID")
 data_corr=data_corr.drop("CustomerID",axis=0)
+pr_chu = pd.Series(data.groupby("Churn").size())
+columns=list(number_data)
+churn_bays=0
 n=len(data_corr)
 for i in range(n):
-    for j in range(n):
-
-
-ps=bayes(data,"Churn","DroppedCalls","UnansweredCalls")
+    j=i+1
+    while j<n:
+        cor=data_corr.iloc[i,j]
+        if abs(cor)<0.2:
+            col=columns[j+1]
+            pr_con=pd.Series(data.groupby([col, "Churn"]).size() / pr_chu)
+            pr=pd.Series(data.groupby(col).size())/total
+            churn_bays=churn_bays *(pr_con/pr)
+        j+=1
