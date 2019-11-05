@@ -115,21 +115,21 @@ number_data = data.select_dtypes(exclude=['object'])
 string_data = data.select_dtypes(exclude=['int','float'])
 # data frame for the probabilty of string columns
 # task 4
-print(prob(data,"CreditRating"))
+# print(prob(data,"CreditRating"))
 # task 5
-print(joint_prob(data,"Churn","ChildrenInHH"))
+# print(joint_prob(data,"Churn","ChildrenInHH"))
 # task 6
-y = data.groupby("CreditRating").size()
-cond = data.groupby(["PrizmCode","CreditRating"]).size()/y
-print(cond)
-sns.set()
+# y = data.groupby("CreditRating").size()
+# cond = data.groupby(["PrizmCode","CreditRating"]).size()/y
+# print(cond)
+# sns.set()
 # task 7,8,9
 # histo(number_data,list(number_data))
 # task 10
 # join_pdf = plt.hist2d(data["MonthlyRevenue"],data["MonthlyMinutes"],bins=50,range=[[0,150],[0,1500]])
 # plt.show()
 # task 11
-mv = mean_var(number_data,list(number_data))
+# mv = mean_var(number_data,list(number_data))
 
 # milestone 2 ...
 # task 1
@@ -157,15 +157,31 @@ data_corr=data_corr.drop(columns="CustomerID")
 data_corr=data_corr.drop("CustomerID",axis=0)
 pr_chu = pd.Series(data.groupby("Churn").size())
 columns=list(number_data)
-churn_bays=0
+churn_bays=pd.Series(bayes(data,"Churn",columns[1]))
 n=len(data_corr)
-for i in range(n):
-    j=i+1
-    while j<n:
-        cor=data_corr.iloc[i,j]
-        if abs(cor)<0.2:
-            col=columns[j+1]
-            pr_con=pd.Series(data.groupby([col, "Churn"]).size() / pr_chu)
-            pr=pd.Series(data.groupby(col).size())/total
-            churn_bays=churn_bays *(pr_con/pr)
-        j+=1
+list = [columns[1]]
+
+for i in range(n-1):
+    cor=data_corr.iloc[0,i+1]
+    if abs(cor)<=0.5:
+        col=columns[i+2]
+        list.append(col)
+
+
+toremove=[]
+for i in range(len(list)-1):
+    for j in range(len(columns)-2):
+        cor=data_corr.loc[list[i+1],columns[j+2]]
+        if abs(cor)>0.5 and cor!=1.0:
+            col=columns[j+2]
+            if list.__contains__(col) and not toremove.__contains__(col):
+                toremove.append(col)
+
+for i in range(len(toremove)):
+    list.remove(toremove[i])
+
+for i in range(len(list)-8):
+    pr_con=pd.Series(data.groupby([list[i], "Churn"]).size() / pr_chu)
+    pr=pd.Series(data.groupby(list[i]).size())/total
+    churn_bays=pd.Series(churn_bays *(pr_con/pr))
+
