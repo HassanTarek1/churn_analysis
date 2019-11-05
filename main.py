@@ -4,7 +4,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import norm
 from scipy.stats import expon
-
+from scipy.stats import beta
 
 
 def prob(dataframe, col):
@@ -53,28 +53,60 @@ def mean_var(df,columns):
     return res
 
 def normal_fit(data,col):
+    plt.figure()
     plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
     mu, std = norm.fit(data[col])
     xmin, xmax = plt.xlim()
     x = np.linspace(xmin, xmax, 100)
     p = norm.pdf(x, mu, std)
-    plt.plot(x, p, 'k', linewidth=2)
-    title = "Fit results: mu = %.2f,  std = %.2f" % (mu, std)
+    plt.plot(x, p, 'y', linewidth=2)
+    title = "Normal fitting of "+str(col)+" with Fit results: mu = %.2f,  std = %.2f" % (mu, std)
     plt.title(title)
     plt.show()
 
 
 def exponential_fit(data,col):
+    plt.figure()
     plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
     loc, scale = expon.fit(data[col])
     xmin, xmax = plt.xlim()
     x = np.linspace(xmin, xmax, 100)
     p = expon.pdf(x, loc, scale)
     plt.plot(x, p, 'k', linewidth=2)
-    title = "Fit results: loc = %.2f,  scale = %.2f" % (loc, scale)
+    title = "Exponential fitting of "+str(col)
     plt.title(title)
     plt.show()
 
+def beta_fit(data,col):
+    plt.figure()
+    plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
+    a,b,loc,scale = beta.fit(data[col])
+    xmin, xmax = plt.xlim()
+    x = np.linspace(xmin, xmax, 100)
+    p=beta.pdf(x,a,b,loc,scale)
+    plt.title("Beta fitting of "+str(col))
+    plt.plot(x, p, 'r', linewidth=2)
+    plt.show()
+
+def pdf(data,col):
+    plt.figure()
+    pdf, bins = np.histogram(data[col], bins=25, density=True)
+    bin_centers = (bins[1:] + bins[:-1]) * 0.5
+    plt.plot(bin_centers, pdf)
+    plt.show()
+
+def bayes(data,col,given1,given2):
+    y = data.groupby(col).size()
+    cond1 = data.groupby([given1, col]).size() / y
+    cond2 = data.groupby([given2, col]).size() / y
+    p=prob(data,col)
+    p1 =prob(data,given1)
+    p2 =prob(data,given2)
+
+def cond(data,col,given):
+    y = data.groupby(given).size()
+    cond = data.groupby([col, given]).size() / y
+    return pd.DataFrame(cond)
 
 # milestone1
 # 1 task
@@ -112,9 +144,22 @@ data_cov = data.cov()
 
 
 # task 3
-normal_fit(data,"ReceivedCalls")
+# normal_fit(data,"ReceivedCalls")
+# pdf(data,"ReceivedCalls")
+# exponential_fit(data,"ReceivedCalls")
+# beta_fit(data,"ReceivedCalls")
+
 # task 4
 y2 = data.groupby("UnansweredCalls").size()
 cond2 = data.groupby(["DroppedCalls","UnansweredCalls"]).size()/y2
 cond2 = pd.DataFrame(cond2)
 exponential_fit(cond2, 0)
+beta_fit(cond2,0)
+y = data.groupby(["DroppedCalls","ReceivedCalls"]).size()
+cond1 = data.groupby(["Churn","DroppedCalls","ReceivedCalls" ]).size() / y
+p=prob(data,"Churn")
+y = data.groupby("Churn").size()
+cond3 = data.groupby(["DroppedCalls", "Churn"]).size() / y
+cond4=data.groupby(["ReceivedCalls", "Churn"]).size() / y
+p1=prob(data,"DroppedCalls")
+p2=prob(data,"ReceivedCalls")
