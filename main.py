@@ -96,17 +96,16 @@ def pdf(data,col):
     plt.show()
 
 def bayes(data,col,given1,given2):
-    y = data.groupby(col).size()
-    cond1 = data.groupby([given1, col]).size() / y
-    cond2 = data.groupby([given2, col]).size() / y
-    p=prob(data,col)
-    p1 =prob(data,given1)
-    p2 =prob(data,given2)
+    pr_chu = pd.Series(data.groupby(col).size())
+    pr1 = pd.Series(data.groupby(given1).size())
+    pr2 = pd.Series(data.groupby(given2).size())
+    pr_c1 = pd.Series(data.groupby([given1, col]).size() / pr_chu)
+    pr_c2 = pd.Series(data.groupby([given2, col]).size() / pr_chu)
+    pr_chu = pr_chu / total
+    pr1 = pr1 / total
+    pr2 = pr2 / total
+    return ((pr_c1*pr_c2*pr_chu)/pr1)/pr2
 
-def cond(data,col,given):
-    y = data.groupby(given).size()
-    cond = data.groupby([col, given]).size() / y
-    return pd.DataFrame(cond)
 
 # milestone1
 # 1 task
@@ -153,13 +152,15 @@ data_cov = data.cov()
 y2 = data.groupby("UnansweredCalls").size()
 cond2 = data.groupby(["DroppedCalls","UnansweredCalls"]).size()/y2
 cond2 = pd.DataFrame(cond2)
-exponential_fit(cond2, 0)
-beta_fit(cond2,0)
-y = data.groupby(["DroppedCalls","ReceivedCalls"]).size()
-cond1 = data.groupby(["Churn","DroppedCalls","ReceivedCalls" ]).size() / y
-p=prob(data,"Churn")
-y = data.groupby("Churn").size()
-cond3 = data.groupby(["DroppedCalls", "Churn"]).size() / y
-cond4=data.groupby(["ReceivedCalls", "Churn"]).size() / y
-p1=prob(data,"DroppedCalls")
-p2=prob(data,"ReceivedCalls")
+# exponential_fit(cond2, 0)
+# beta_fit(cond2,0)
+
+# task 5
+data_corr=data_corr.drop(columns="CustomerID")
+data_corr=data_corr.drop("CustomerID",axis=0)
+n=len(data_corr)
+for i in range(n):
+    for j in range(n):
+
+
+ps=bayes(data,"Churn","DroppedCalls","UnansweredCalls")
