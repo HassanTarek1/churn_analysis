@@ -157,7 +157,9 @@ data_corr=data_corr.drop(columns="CustomerID")
 data_corr=data_corr.drop("CustomerID",axis=0)
 pr_chu = pd.Series(data.groupby("Churn").size())
 columns=list(number_data)
-churn_bays=pd.Series(bayes(data,"Churn",columns[1]))
+pr_con = pd.Series(data.groupby([columns[1], "Churn"]).size() / pr_chu)
+pr = pd.Series(data.groupby(columns[1]).size()) / total
+churn_bays=pr_con/pr
 n=len(data_corr)
 list = [columns[1]]
 
@@ -180,8 +182,10 @@ for i in range(len(list)-1):
 for i in range(len(toremove)):
     list.remove(toremove[i])
 
-for i in range(len(list)-8):
+for i in range(len(list)-7):
     pr_con=pd.Series(data.groupby([list[i], "Churn"]).size() / pr_chu)
     pr=pd.Series(data.groupby(list[i]).size())/total
     churn_bays=pd.Series(churn_bays *(pr_con/pr))
 
+pr_chu=pr_chu/total
+churn_bays=churn_bays*pr_chu
