@@ -122,7 +122,7 @@ string_data = data.select_dtypes(exclude=['int','float'])
 # y = data.groupby("CreditRating").size()
 # cond = data.groupby(["PrizmCode","CreditRating"]).size()/y
 # print(cond)
-# sns.set()
+sns.set()
 # task 7,8,9
 # histo(number_data,list(number_data))
 # task 10
@@ -156,7 +156,6 @@ cond2 = pd.DataFrame(cond2)
 data_corr=data_corr.drop(columns="CustomerID")
 data_corr=data_corr.drop("CustomerID",axis=0)
 columns=list(number_data)
-
 n=len(data_corr)
 list = [columns[1]]
 
@@ -179,15 +178,34 @@ for i in range(len(list)-1):
 for i in range(len(toremove)):
     list.remove(toremove[i])
 
-total=len(number_data)
-pr_chu = pd.Series(data.groupby("Churn").size())
-pr_con= pd.Series(data.groupby([list[0], "Churn"]).size() / pr_chu)
-pr = pd.Series(data.groupby(list[0]).size()/ total)
-churn_bays=(pr_con*(pr_chu/total))/pr
+bays_data=data[data.Churn!="No"]
+pr_chu = pd.Series((data.groupby("Churn").size())/total).take(indices=[1])
+pr_chu = float(pr_chu)
+pr = []
+bins = []
+for i in range(len(list)):
+    pc1,bins1=np.histogram(bays_data[list[i]],bins=25,density=True)
+    pr1,bins1=np.histogram(data[list[i]],bins=25,density=True)
+    bin_centers = (bins1[1:] + bins1[:-1]) * 0.5
+    pr.append((pc1/pr1))
+    bins.append(bin_centers)
 
-for i in range(len(list)-8):
-    pr_con=pd.Series(data.groupby([list[i+1], "Churn"]).size() / pr_chu)
-    pr=pd.Series(data.groupby(list[i+1]).size())/total
-    churn_bays=churn_bays *((pr_con*(pr_chu/total))/pr)
+churn_bays = []
+for i in range(len(pr[0])):
+    prod=1
+    for j in range(len(pr)):
+        prod=prod*pr[j][i]*pr_chu
+    churn_bays.append(prod)
 
-print(churn_bays.head())
+
+given = []
+for i in range(len(bins[0])):
+    string= ""
+    for j in range(len(bins)):
+        t=str(bins[j][i])
+        string=string+t+"/"
+    given.append(string)
+
+print(churn_bays)
+print(list)
+print(given)
