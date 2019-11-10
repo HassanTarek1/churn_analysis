@@ -185,9 +185,11 @@ pr = []
 bins = []
 for i in range(len(list)):
     pc1,bins1=np.histogram(bays_data[list[i]],bins=25,density=True)
+    np.nan_to_num(pc1,copy=False)
     pr1,bins1=np.histogram(data[list[i]],bins=25,density=True)
+    np.nan_to_num(pr1,copy=False)
     bin_centers = (bins1[1:] + bins1[:-1]) * 0.5
-    pr.append((pc1/pr1))
+    pr.append(np.divide(pc1,pr1))
     bins.append(bin_centers)
 
 churn_bays = []
@@ -196,7 +198,8 @@ for i in range(len(pr[0])):
     for j in range(len(pr)):
         prod=prod*pr[j][i]*pr_chu
     churn_bays.append(prod)
-
+churn_bays=np.array(churn_bays)
+np.nan_to_num(churn_bays, copy=False)
 
 given = []
 for i in range(len(bins[0])):
