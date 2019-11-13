@@ -229,6 +229,6 @@ for i in range(len(churn_bays)):
     if churn_bays[0][i] >=1:
         sum+=1
 sum=sum/len(churn_bays)
-print("probability of churn -calculated- = "+str(sum))
+print("probability of churn calculated = "+str(sum))
 print("true probability of churn = "+str(pr_chu))
 
