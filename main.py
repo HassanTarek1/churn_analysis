@@ -53,47 +53,45 @@ def mean_var(df,columns):
     return res
 
 def normal_fit(data,col):
-    plt.figure()
-    plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
     mu, std = norm.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 100)
-    p = norm.pdf(x, mu, std)
-    plt.plot(x, p, 'y', linewidth=2)
-    title = "Normal fitting of "+str(col)+" with Fit results: mu = %.2f,  std = %.2f" % (mu, std)
-    plt.title(title)
-    plt.show()
+    x = np.linspace(xmin, xmax, 1000)
+    # p = norm.pdf(x, mu, std)
+    # plt.plot(x, p, 'y', linewidth=2)
+    # title = "Normal fitting of "+str(col)+" with Fit results: mu = %.2f,  std = %.2f" % (mu, std)
+    # plt.title(title)
+    # plt.show()
+    return x,mu,std
 
 
 def exponential_fit(data,col):
-    plt.figure()
-    plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
     loc, scale = expon.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 100)
-    p = expon.pdf(x, loc, scale)
-    plt.plot(x, p, 'k', linewidth=2)
-    title = "Exponential fitting of "+str(col)
-    plt.title(title)
-    plt.show()
+    x = np.linspace(xmin, xmax, 1000)
+    # plt.plot(x, p, 'k', linewidth=2)
+    # title = "Exponential fitting of "+str(col)
+    # plt.title(title)
+    # plt.show()
+    return x,loc,scale
 
 def beta_fit(data,col):
-    plt.figure()
-    plt.hist(data[col], bins=25, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
     a,b,loc,scale = beta.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 100)
-    p=beta.pdf(x,a,b,loc,scale)
-    plt.title("Beta fitting of "+str(col))
-    plt.plot(x, p, 'r', linewidth=2)
-    plt.show()
+    x = np.linspace(xmin, xmax, 1000)
+    # plt.title("Beta fitting of "+str(col))
+    # plt.plot(x, p, 'r', linewidth=2)
+    # plt.show()
+    return x,a,b,loc,scale
 
 def pdf(data,col):
-    plt.figure()
-    pdf, bins = np.histogram(data[col], bins=25, density=True)
+    pdf, bins = np.histogram(data[col], bins=1000, density=True)
     bin_centers = (bins[1:] + bins[:-1]) * 0.5
-    plt.plot(bin_centers, pdf)
-    plt.show()
+    # plt.plot(bin_centers, pdf)
+    # plt.show()
+    return pdf,bin_centers
 
 def bayes(data,col,given):
     pr_chu = pd.Series(data.groupby(col).size())
@@ -137,22 +135,6 @@ data_corr= data.corr()
 data_cov = data.cov()
 
 # task 2
-
-
-# task 3
-# normal_fit(data,"ReceivedCalls")
-# pdf(data,"ReceivedCalls")
-# exponential_fit(data,"ReceivedCalls")
-# beta_fit(data,"ReceivedCalls")
-
-# task 4
-y2 = data.groupby("UnansweredCalls").size()
-cond2 = data.groupby(["DroppedCalls","UnansweredCalls"]).size()/y2
-cond2 = pd.DataFrame(cond2)
-# exponential_fit(cond2, 0)
-# beta_fit(cond2,0)
-
-# task 5
 data_corr=data_corr.drop(columns="CustomerID")
 data_corr=data_corr.drop("CustomerID",axis=0)
 columns=list(number_data)
@@ -178,37 +160,75 @@ for i in range(len(list)-1):
 for i in range(len(toremove)):
     list.remove(toremove[i])
 
+
+# task 3
+
+# c=number_data.iloc[0,1]
+# m=expon.pdf(c,loc,scale)
+array_pdf=[]
+for i in range(len(list)):
+    x1, loc, scale = exponential_fit(number_data, list[i])
+    x2, mu, std = normal_fit(number_data, list[i])
+    p1 = expon.pdf(x1, loc, scale)
+    pdf1, b = pdf(number_data, list[i])
+    p2 = norm.pdf(x2, mu, std)
+    pdf2, b = pdf(number_data, list[i])
+    mse1 = np.square(np.subtract(p1, pdf1)).mean()
+    mse2 = np.square(np.subtract(p2, pdf2)).mean()
+    tmp=[]
+    if mse1<mse2 :
+        tmp=["expon",loc,scale]
+    else:
+        tmp=["norm",mu,std]
+    array_pdf.append(tmp)
+
 bays_data=data[data.Churn!="No"]
+array_cond_pdf=[]
+for i in range(len(list)):
+    x1, loc, scale = exponential_fit(bays_data, list[i])
+    x2, mu, std = normal_fit(bays_data, list[i])
+    p1 = expon.pdf(x1, loc, scale)
+    pdf1, b = pdf(bays_data, list[i])
+    p2 = norm.pdf(x2, mu, std)
+    pdf2, b = pdf(bays_data, list[i])
+    mse1 = np.square(np.subtract(p1, pdf1)).mean()
+    mse2 = np.square(np.subtract(p2, pdf2)).mean()
+    tmp=[]
+    if mse1<mse2 :
+        tmp=["expon",loc,scale]
+    else:
+        tmp=["norm",mu,std]
+    array_cond_pdf.append(tmp)
+
 pr_chu = pd.Series((data.groupby("Churn").size())/total).take(indices=[1])
 pr_chu = float(pr_chu)
-pr = []
-bins = []
-for i in range(len(list)):
-    pc1,bins1=np.histogram(bays_data[list[i]],bins=25,density=True)
-    np.nan_to_num(pc1,copy=False)
-    pr1,bins1=np.histogram(data[list[i]],bins=25,density=True)
-    np.nan_to_num(pr1,copy=False)
-    bin_centers = (bins1[1:] + bins1[:-1]) * 0.5
-    pr.append(np.divide(pc1,pr1))
-    bins.append(bin_centers)
+churn_bays=[]
+data.reset_index(inplace=True)
+for i in range(len(data)-10000):
+    result=1
+    for j in range(len(list)):
+        stat_c=array_cond_pdf[j][0]
+        stat=array_pdf[j][0]
+        c = data[list[j]][i]
+        if stat=="norm":
+            p=norm.pdf(c,array_pdf[j][1],array_pdf[j][2])
+        else:
+            p = expon.pdf(c, array_pdf[j][1], array_pdf[j][2])
+        if stat_c == "norm":
+            pc = norm.pdf(c, array_cond_pdf[j][1], array_pdf[j][2])
+        else:
+            pc = expon.pdf(c, array_cond_pdf[j][1], array_pdf[j][2])
+        result=result*(pc/p)
+    result=result*pr_chu
+    churn_bays.append(result)
+churn_bays=pd.DataFrame(churn_bays)
+churn_bays.dropna(inplace=True)
+churn_bays.reset_index(inplace=True)
+sum=0
+for i in range(len(churn_bays)):
+    if churn_bays[0][i] >=1:
+        sum+=1
+sum=sum/len(churn_bays)
+print("probability of churn -calculated- = "+str(sum))
+print("true probability of churn = "+str(pr_chu))
 
-churn_bays = []
-for i in range(len(pr[0])):
-    prod=1
-    for j in range(len(pr)):
-        prod=prod*pr[j][i]*pr_chu
-    churn_bays.append(prod)
-churn_bays=np.array(churn_bays)
-np.nan_to_num(churn_bays, copy=False)
-
-given = []
-for i in range(len(bins[0])):
-    string= ""
-    for j in range(len(bins)):
-        t=str(bins[j][i])
-        string=string+t+"/"
-    given.append(string)
-
-print(churn_bays)
-print(list)
-print(given)
