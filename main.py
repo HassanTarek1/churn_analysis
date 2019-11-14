@@ -53,10 +53,10 @@ def mean_var(df,columns):
     return res
 
 def normal_fit(data,col):
-    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=10000, density=True, alpha=0.6, color='g')
     mu, std = norm.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 1000)
+    x = np.linspace(xmin, xmax, 10000)
     # p = norm.pdf(x, mu, std)
     # plt.plot(x, p, 'y', linewidth=2)
     # title = "Normal fitting of "+str(col)+" with Fit results: mu = %.2f,  std = %.2f" % (mu, std)
@@ -66,10 +66,10 @@ def normal_fit(data,col):
 
 
 def exponential_fit(data,col):
-    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=10000, density=True, alpha=0.6, color='g')
     loc, scale = expon.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 1000)
+    x = np.linspace(xmin, xmax, 10000)
     # plt.plot(x, p, 'k', linewidth=2)
     # title = "Exponential fitting of "+str(col)
     # plt.title(title)
@@ -77,17 +77,17 @@ def exponential_fit(data,col):
     return x,loc,scale
 
 def beta_fit(data,col):
-    plt.hist(data[col], bins=1000, density=True, alpha=0.6, color='g')
+    plt.hist(data[col], bins=10000, density=True, alpha=0.6, color='g')
     a,b,loc,scale = beta.fit(data[col])
     xmin, xmax = plt.xlim()
-    x = np.linspace(xmin, xmax, 1000)
+    x = np.linspace(xmin, xmax, 10000)
     # plt.title("Beta fitting of "+str(col))
     # plt.plot(x, p, 'r', linewidth=2)
     # plt.show()
     return x,a,b,loc,scale
 
 def pdf(data,col):
-    pdf, bins = np.histogram(data[col], bins=1000, density=True)
+    pdf, bins = np.histogram(data[col], bins=10000, density=True)
     bin_centers = (bins[1:] + bins[:-1]) * 0.5
     # plt.plot(bin_centers, pdf)
     # plt.show()
@@ -226,7 +226,7 @@ churn_bays.dropna(inplace=True)
 churn_bays.reset_index(inplace=True)
 sum=0
 for i in range(len(churn_bays)):
-    if churn_bays[0][i] >=1:
+    if churn_bays[0][i] >=0.7:
         sum+=1
 sum=sum/len(churn_bays)
 print("probability of churn calculated = "+str(sum))
