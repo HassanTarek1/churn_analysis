@@ -204,7 +204,7 @@ pr_chu = pd.Series((data.groupby("Churn").size())/total).take(indices=[1])
 pr_chu = float(pr_chu)
 churn_bays=[]
 data.reset_index(inplace=True)
-for i in range(len(data)-10000):
+for i in range(len(data)):
     result=1
     for j in range(len(list)):
         stat_c=array_cond_pdf[j][0]
@@ -228,7 +228,12 @@ sum=0
 for i in range(len(churn_bays)):
     if churn_bays[0][i] >=0.7:
         sum+=1
-sum=sum/len(churn_bays)
-print("probability of churn calculated = "+str(sum))
-print("true probability of churn = "+str(pr_chu))
 
+actual_sum=0
+for i in range(len(data)):
+    if data["Churn"][i] == "Yes":
+        actual_sum+=1
+print("sum of churn calculated = "+str(sum))
+print("true sum of churn = "+str(actual_sum))
+acc=actual_sum-sum
+print("accuracy is "+str(acc/100)+"%")
